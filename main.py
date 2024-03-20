@@ -8,31 +8,32 @@ from log import InnSearcherLogger
 from datetime import datetime
 
 
-PERSONS_TABLE_EXCEL_FILE_PATH = 'excel/input/persons_table.xlsx'
-OUTPUT_EXCEL_FILE = f'excel/output/search_inn_{datetime.now().strftime(format="%Y-%m-%d_%H-%M-%S")}.xlsx'
-
-PROXY_URL = ''
+INPUT_FILE = 'excel/input/persons_table.xlsx'
+OUTPUT_FILE = f'excel/output/search_inn_{datetime.now().strftime(format="%Y-%m-%d_%H-%M-%S")}.xlsx'
 
 
 async def main() -> None:
-    logger = InnSearcherLogger()
+	logger = InnSearcherLogger()
 
-    persons_list = get_persons_list(PERSONS_TABLE_EXCEL_FILE_PATH)
-    search_inn_tasks = [search_inn_(person=person, logger=logger) for person in persons_list]
+	try:
+		persons_list = get_persons_list(input_excel_file=INPUT_FILE)
+	except Exception as e:
+		logger.error(f'Failed to get persons list: {type(e)} - {e}')
+		return
 
-    for search_inn_task in asyncio.as_completed(search_inn_tasks):
-        checked_person = await search_inn_task
-        await asyncio.to_thread(output_results, output_excel_file=OUTPUT_EXCEL_FILE, checked_person=checked_person)
+	search_inn_tasks = [search_inn_(person=person, logger=logger, output_file=OUTPUT_FILE) for person in persons_list]
+	for search_inn_task in asyncio.as_completed(search_inn_tasks):
+		await search_inn_task
 
 
 if __name__ == '__main__':
-    import time
+	import time
 
-    print('------------- STARTED -------------')
-    start_time = time.time()
+	print('------------- STARTED -------------')
+	start_time = time.time()
 
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
+	loop = asyncio.get_event_loop()
+	loop.run_until_complete(main())
 
-    print('------------- FINISHED -------------')
-    print(f'Time: {time.time() - start_time}')
+	print('------------- FINISHED -------------')
+	print(f'Time: {time.time() - start_time}')

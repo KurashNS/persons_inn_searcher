@@ -77,12 +77,6 @@ class TorProxyConnector(ProxyConnector):
         self._terminate_tor_process()
 
 
-def get_proxy_connector() -> ProxyConnector:
-    proxy_url = ''
-    if proxy_url:
-        return ProxyConnector.from_url(url=proxy_url)
-
-
 if __name__ == '__main__':
     import asyncio
     import aiohttp
